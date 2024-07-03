@@ -1,4 +1,4 @@
-package com.example.ics342_shane_schulte
+package com.example.ics342shaneschultesapplication
 
 import org.junit.Test
 

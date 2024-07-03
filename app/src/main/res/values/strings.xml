@@ -1,3 +1,7 @@
 <resources>
-    <string name="app_name">ICS342_Shane_Schulte</string>
+    <string name="app_name">Todo List</string>
+    <string name="todo_item">Todo Item</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="please_enter_todo">Please enter a todo item</string>
 </resources>

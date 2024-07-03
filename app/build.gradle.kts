@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.ics342_shane_schulte"
+    namespace = "com.example.ics342shaneschultesapplication"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.example.ics342_shane_schulte"
+        applicationId = "com.example.ics342shaneschultesapplication"
         minSdk = 24
         targetSdk = 34
         versionCode = 1
@@ -63,4 +63,9 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+    implementation("androidx.compose.ui:ui:1.3.3")
+    implementation("androidx.compose.material:material:1.3.3")
+    implementation("androidx.compose.ui:ui-tooling-preview:1.3.3")
+    implementation("androidx.activity:activity-compose:1.3.1")
+    implementation("androidx.compose.runtime:runtime-livedata:1.3.3")
 }

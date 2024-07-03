@@ -1,4 +1,4 @@
-package com.example.ics342_shane_schulte.ui.theme
+package com.example.ics342shaneschultesapplication.ui.theme
 
 import android.app.Activity
 import android.os.Build
@@ -34,7 +34,7 @@ private val LightColorScheme = lightColorScheme(
 )
 
 @Composable
-fun ICS342_Shane_SchulteTheme(
+fun ICS342ShaneSchultesApplicationTheme(
         darkTheme: Boolean = isSystemInDarkTheme(),
         // Dynamic color is available on Android 12+
         dynamicColor: Boolean = true,

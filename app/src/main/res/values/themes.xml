@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.ICS342_Shane_Schulte" parent="android:Theme.Material.Light.NoActionBar" />
+    <style name="Theme.ICS342ShaneSchultesApplication" parent="android:Theme.Material.Light.NoActionBar" />
 </resources>

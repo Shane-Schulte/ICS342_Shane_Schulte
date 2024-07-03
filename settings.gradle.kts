@@ -19,6 +19,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "ICS342_Shane_Schulte"
+rootProject.name = "ICS 342 Shane Schulte's Application"
 include(":app")
- 

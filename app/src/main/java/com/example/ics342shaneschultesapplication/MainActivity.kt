@@ -6,7 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -19,14 +19,44 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.ui.text.TextStyle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             TodoListTheme {
-                Surface(color = MaterialTheme.colors.background) {
-                    TodoApp()
+                val navController = rememberNavController()
+                var user by remember { mutableStateOf<User?>(null) }
+
+                NavHost(navController = navController, startDestination = "login") {
+                    composable("login") {
+                        LoginScreen(onLoginSuccess = { loggedInUser ->
+                            user = loggedInUser
+                            navController.navigate("todo")
+                        }, onCreateAccount = {
+                            navController.navigate("create_account")
+                        })
+                    }
+                    composable("create_account") {
+                        CreateAccountScreen(onAccountCreated = { newUser ->
+                            user = newUser
+                            navController.navigate("todo")
+                        }, onCancel = {
+                            navController.popBackStack()
+                        })
+                    }
+                    composable("todo") {
+                        if (user != null) {
+                            TodoApp(user = user!!)
+                        }
+                    }
                 }
             }
         }
@@ -34,9 +64,144 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun TodoApp() {
-    var todoItems by remember { mutableStateOf(listOf<TodoItem>()) }
+fun LoginScreen(
+    onLoginSuccess: (User) -> Unit,
+    onCreateAccount: () -> Unit,
+    loginViewModel: LoginViewModel = viewModel()
+) {
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+
+    val loginState by loginViewModel.loginState.collectAsState()
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.Center
+    ) {
+        OutlinedTextField(
+            value = email,
+            onValueChange = { email = it },
+            label = { Text("Email") },
+            modifier = Modifier.fillMaxWidth()
+        )
+        OutlinedTextField(
+            value = password,
+            onValueChange = { password = it },
+            label = { Text("Password") },
+            visualTransformation = PasswordVisualTransformation(),
+            modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        Button(
+            onClick = { loginViewModel.login(email, password) },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Log In")
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        TextButton(
+            onClick = onCreateAccount,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Create an Account")
+        }
+        if (loginState is LoginViewModel.LoginState.Loading) {
+            CircularProgressIndicator(modifier = Modifier.padding(top = 16.dp))
+        }
+        if (loginState is LoginViewModel.LoginState.Error) {
+            Text(
+                text = (loginState as LoginViewModel.LoginState.Error).message,
+                color = MaterialTheme.colorScheme.error,
+                modifier = Modifier.padding(top = 16.dp))
+        }
+        if (loginState is LoginViewModel.LoginState.Success) {
+            LaunchedEffect(loginState) {
+                onLoginSuccess((loginState as LoginViewModel.LoginState.Success).user)
+            }
+        }
+    }
+}
+
+@Composable
+fun CreateAccountScreen(
+    onAccountCreated: (User) -> Unit,
+    onCancel: () -> Unit,
+    createAccountViewModel: CreateAccountViewModel = viewModel()
+) {
+    var name by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+
+    val createAccountState by createAccountViewModel.createAccountState.collectAsState()
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.Center
+    ) {
+        OutlinedTextField(
+            value = name,
+            onValueChange = { name = it },
+            label = { Text("Name") },
+            modifier = Modifier.fillMaxWidth()
+        )
+        OutlinedTextField(
+            value = email,
+            onValueChange = { email = it },
+            label = { Text("Email") },
+            modifier = Modifier.fillMaxWidth()
+        )
+        OutlinedTextField(
+            value = password,
+            onValueChange = { password = it },
+            label = { Text("Password") },
+            visualTransformation = PasswordVisualTransformation(),
+            modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        Button(
+            onClick = { createAccountViewModel.createAccount(name, email, password) },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Create Account")
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        TextButton(
+            onClick = onCancel,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Cancel")
+        }
+        if (createAccountState is CreateAccountViewModel.CreateAccountState.Loading) {
+            CircularProgressIndicator(modifier = Modifier.padding(top = 16.dp))
+        }
+        if (createAccountState is CreateAccountViewModel.CreateAccountState.Error) {
+            Text(
+                text = (createAccountState as CreateAccountViewModel.CreateAccountState.Error).message,
+                color = MaterialTheme.colorScheme.error,
+                modifier = Modifier.padding(top = 16.dp)
+            )
+        }
+        if (createAccountState is CreateAccountViewModel.CreateAccountState.Success) {
+            LaunchedEffect(createAccountState) {
+                onAccountCreated((createAccountState as CreateAccountViewModel.CreateAccountState.Success).user)
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TodoApp(user: User, todoListViewModel: ToDoListViewModel = viewModel()) {
+    val todoItems by todoListViewModel.todoListState.collectAsState()
     var showDialog by remember { mutableStateOf(false) }
+
+    LaunchedEffect(user) {
+        todoListViewModel.fetchTodos()
+    }
 
     Scaffold(
         topBar = {
@@ -52,16 +217,14 @@ fun TodoApp() {
     ) { contentPadding ->
         Column(modifier = Modifier.padding(contentPadding).padding(12.dp)) {
             TodoList(todoItems) { item, isChecked ->
-                todoItems = todoItems.map {
-                    if (it == item) it.copy(isCompleted = isChecked) else it
-                }
+                todoListViewModel.updateTodoStatus(item.id, isChecked)
             }
 
             if (showDialog) {
                 AddTodoDialog(
                     onDismiss = { showDialog = false },
                     onSave = { newItem ->
-                        todoItems = todoItems + newItem
+                        todoListViewModel.createTodo(newItem.description)
                         showDialog = false
                     }
                 )
@@ -71,7 +234,7 @@ fun TodoApp() {
 }
 
 @Composable
-fun TodoList(todoItems: List<TodoItem>, onCheckedChange: (TodoItem, Boolean) -> Unit) {
+fun TodoList(todoItems: List<ToDoItem>, onCheckedChange: (ToDoItem, Boolean) -> Unit) {
     LazyColumn {
         items(todoItems) { item ->
             Row(
@@ -79,9 +242,9 @@ fun TodoList(todoItems: List<TodoItem>, onCheckedChange: (TodoItem, Boolean) -> 
                     .fillMaxWidth()
                     .padding(vertical = 8.dp)
             ) {
-                Text(item.name, modifier = Modifier.weight(1f))
+                Text(item.description, modifier = Modifier.weight(1f))
                 Checkbox(
-                    checked = item.isCompleted,
+                    checked = item.completed,
                     onCheckedChange = { isChecked -> onCheckedChange(item, isChecked) }
                 )
             }
@@ -90,7 +253,7 @@ fun TodoList(todoItems: List<TodoItem>, onCheckedChange: (TodoItem, Boolean) -> 
 }
 
 @Composable
-fun AddTodoDialog(onDismiss: () -> Unit, onSave: (TodoItem) -> Unit) {
+fun AddTodoDialog(onDismiss: () -> Unit, onSave: (ToDoItem) -> Unit) {
     var text by remember { mutableStateOf("") }
     var showError by remember { mutableStateOf(false) }
 
@@ -110,7 +273,7 @@ fun AddTodoDialog(onDismiss: () -> Unit, onSave: (TodoItem) -> Unit) {
                     }
                 )
                 if (showError) {
-                    Text("Please enter a todo item", color = MaterialTheme.colors.error)
+                    Text("Please enter a todo item", color = MaterialTheme.colorScheme.error)
                 }
             }
         },
@@ -119,7 +282,7 @@ fun AddTodoDialog(onDismiss: () -> Unit, onSave: (TodoItem) -> Unit) {
                 if (text.isBlank()) {
                     showError = true
                 } else {
-                    onSave(TodoItem(name = text))
+                    onSave(ToDoItem.create(description = text))
                     showError = false
                 }
             }) {
@@ -134,22 +297,20 @@ fun AddTodoDialog(onDismiss: () -> Unit, onSave: (TodoItem) -> Unit) {
     )
 }
 
-data class TodoItem(val name: String, val isCompleted: Boolean = false)
-
 private val Purple200 = Color(0xFFBB86FC)
 private val Purple500 = Color(0xFF6200EE)
 private val Purple700 = Color(0xFF3700B3)
 private val Teal200 = Color(0xFF03DAC5)
 
-private val DarkColorPalette = darkColors(
+private val DarkColorPalette = darkColorScheme(
     primary = Purple200,
-    primaryVariant = Purple700,
+    primaryContainer = Purple700,
     secondary = Teal200
 )
 
-private val LightColorPalette = lightColors(
+private val LightColorPalette = lightColorScheme(
     primary = Purple500,
-    primaryVariant = Purple700,
+    primaryContainer = Purple700,
     secondary = Teal200
 )
 
@@ -162,7 +323,7 @@ fun TodoListTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composab
     }
 
     MaterialTheme(
-        colors = colors,
+        colorScheme = colors,
         typography = Typography,
         shapes = Shapes,
         content = content
@@ -170,7 +331,7 @@ fun TodoListTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composab
 }
 
 private val Typography = Typography(
-    body1 = androidx.compose.ui.text.TextStyle(
+    bodyLarge = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.Normal,
         fontSize = 16.sp

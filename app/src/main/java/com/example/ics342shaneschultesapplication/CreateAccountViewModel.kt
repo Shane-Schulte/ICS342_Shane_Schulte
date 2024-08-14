@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-class CreateAccountViewModel(application: Application) : AndroidViewModel(application) {
+class CreateAccountViewModel(application: Application, private val apiService: ToDoApiService) : AndroidViewModel(application) {
     private val sharedPreferences = application.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
     private val _createAccountState = MutableStateFlow<CreateAccountState>(CreateAccountState.Empty)
     val createAccountState: StateFlow<CreateAccountState> = _createAccountState
@@ -17,7 +17,7 @@ class CreateAccountViewModel(application: Application) : AndroidViewModel(applic
         viewModelScope.launch {
             _createAccountState.value = CreateAccountState.Loading
             try {
-                val response = RetrofitInstance.api.createAccount(UserCreateRequest(name, email, password))
+                val response = apiService.createAccount(UserCreateRequest(name, email, password))
                 if (response.isSuccessful && response.body() != null) {
                     val user = response.body()!!
                     sharedPreferences.edit().putString("token", user.token).putInt("user_id", user.id).apply()

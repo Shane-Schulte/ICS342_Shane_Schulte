@@ -48,6 +48,10 @@ android {
     }
 }
 
+tasks.withType<Test> {
+    useJUnitPlatform()
+}
+
 dependencies {
     implementation("androidx.core:core-ktx:1.10.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.5.1")
@@ -66,11 +70,22 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.3")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.3")
+    implementation("org.jetbrains.kotlin:kotlin-reflect")
+    implementation(libs.core.ktx)
+    implementation(libs.constraintlayout)
     testImplementation("junit:junit:4.13.2")
+    testImplementation(libs.junit.jupiter)
     androidTestImplementation("androidx.test.ext:junit:1.1.2")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.4.0")
     androidTestImplementation(platform("androidx.compose:compose-bom:2024.04.01"))
     androidTestImplementation("androidx.compose.ui:ui-test-junit4:1.4.0")
     debugImplementation("androidx.compose.ui:ui-tooling:1.4.0")
     debugImplementation("androidx.compose.ui:ui-test-manifest:1.4.0")
+
+    testImplementation("junit:junit:4.13.2")
+    testImplementation("io.mockk:mockk:1.12.0")
+    testImplementation("androidx.arch.core:core-testing:2.1.0")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.0")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.1")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.8.1")
 }

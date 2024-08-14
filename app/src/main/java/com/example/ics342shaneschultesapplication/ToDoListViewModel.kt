@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-class ToDoListViewModel(application: Application) : AndroidViewModel(application) {
+class ToDoListViewModel(application: Application, private val apiService: ToDoApiService) : AndroidViewModel(application) {
     private val sharedPreferences = application.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
     private val _todoListState = MutableStateFlow<List<ToDoItem>>(emptyList())
     val todoListState: StateFlow<List<ToDoItem>> = _todoListState
@@ -23,7 +23,7 @@ class ToDoListViewModel(application: Application) : AndroidViewModel(application
     fun fetchTodos() {
         if (userId != -1 && apiKey != null) {
             viewModelScope.launch {
-                val response = RetrofitInstance.api.getTodos(userId)
+                val response = apiService.getTodos(userId)
                 if (response.isSuccessful) {
                     _todoListState.value = response.body() ?: emptyList()
                 } else {
@@ -36,7 +36,7 @@ class ToDoListViewModel(application: Application) : AndroidViewModel(application
     fun createTodo(description: String) {
         if (userId != -1 && apiKey != null) {
             viewModelScope.launch {
-                val response = RetrofitInstance.api.createTodo(userId, ToDoCreateRequest(description))
+                val response = apiService.createTodo(userId, ToDoCreateRequest(description))
                 if (response.isSuccessful) {
                     fetchTodos()
                 } else {
@@ -51,7 +51,7 @@ class ToDoListViewModel(application: Application) : AndroidViewModel(application
             viewModelScope.launch {
                 val todo = _todoListState.value.find { it.id == todoId }
                 if (todo != null) {
-                    val response = RetrofitInstance.api.updateTodo(
+                    val response = apiService.updateTodo(
                         userId,
                         todoId,
                         ToDoUpdateRequest(todo.description, completed)

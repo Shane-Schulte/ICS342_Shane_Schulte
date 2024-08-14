@@ -6,9 +6,10 @@ import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 
+
 object RetrofitInstance {
     private const val BASE_URL = "https://todos.simpleapi.dev/"
-    private const val API_KEY = "bf726866-dfb5-409f-8c5b-784031d96e84"
+    private const val API_KEY = "125eb1fe-8f3f-4004-941c-1dcb818fec00"
 
     private val moshi = Moshi.Builder()
         .add(KotlinJsonAdapterFactory())
@@ -21,12 +22,11 @@ object RetrofitInstance {
         chain.proceed(request)
     }.build()
 
-    val api: ToDoApiService by lazy {
-        Retrofit.Builder()
-            .baseUrl(BASE_URL)
-            .client(client)
-            .addConverterFactory(MoshiConverterFactory.create(moshi))
-            .build()
-            .create(ToDoApiService::class.java)
-    }
+    var api = Retrofit.Builder()
+        .baseUrl(BASE_URL)
+        .client(client)
+        .addConverterFactory(MoshiConverterFactory.create(moshi))
+        .build()
+        .create(ToDoApiService::class.java)
+
 }
